@@ -125,10 +125,26 @@ html[dir="rtl"] .callout.alert{border-right-color:var(--bad)}
 }
 .btn-primary{background:var(--blue);color:#fff}
 .btn-primary:hover{background:var(--blue-dark)}
+.btn-primary:disabled{
+  background:#94a3b8;
+  cursor:not-allowed;
+  opacity:.65;
+}
+.btn-primary:disabled:hover{background:#94a3b8}
 .btn-ghost{background:#fff;color:var(--blue-dark);border:1.5px solid var(--line)}
 .btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
 .btn-remove{background:#fff;color:var(--bad);border:1.5px solid #f3c9c9;padding:4px 10px;border-radius:8px;cursor:pointer;font-weight:800}
 .btn-remove:hover{background:var(--bad);color:#fff}
+
+/* ---------- pdf status ---------- */
+.pdf-status{
+  margin-top:14px;padding:11px 16px;border-radius:10px;font-size:.9rem;line-height:1.5;
+}
+.pdf-status.ready{background:var(--ok-bg);color:var(--ok);font-weight:700}
+.pdf-status.not-ready{background:#fffbeb;color:#92400e;border:1px solid #fcd34d}
+.pdf-status.not-ready b{display:block;margin-bottom:4px}
+.pdf-status ul{margin:4px 0 0;padding-inline-start:20px}
+.pdf-status li{margin:2px 0}
 
 /* ---------- changes table ---------- */
 .changes-table textarea{min-height:56px;font-size:.88rem}
@@ -411,7 +427,8 @@ html[dir="rtl"] .callout.alert{border-right-color:var(--bad)}
       <h2 data-i18n="s7.title">Step 7 — Generate your PDF</h2>
     </div>
     <p class="lead" data-i18n="s7.intro">Click the button. A print dialog will open — choose "Save as PDF". Upload that PDF to Toddle.</p>
-    <button class="btn btn-primary" id="pdfBtn" style="font-size:1rem;padding:12px 24px">📄 <span data-i18n="s7.button">Generate PDF</span></button>
+    <button class="btn btn-primary" id="pdfBtn" disabled style="font-size:1rem;padding:12px 24px">📄 <span data-i18n="s7.button">Generate PDF</span></button>
+    <div class="pdf-status not-ready" id="pdfStatus"></div>
   </section>
 
 </main>
@@ -511,6 +528,11 @@ const i18n = {
     "s7.title": "Step 7 — Generate your PDF",
     "s7.intro": "Click the button. A print dialog will open — choose \"Save as PDF\". Upload that PDF to Toddle.",
     "s7.button": "Generate PDF",
+    "s7.ready": "✅ All required fields are filled — you can generate your PDF.",
+    "s7.notReady": "Complete these fields to enable the PDF button:",
+    "s7.missingPlan": "Construction plan ({n} of 4 sections still empty)",
+    "s7.missingChanges": "Changes log (needs at least one complete row: what, why, effect)",
+    "s7.missingInvoice": "Invoice figures: {list}",
 
     "unit.credits": "credits",
     "foot.saved": "Your work is saved automatically in this browser.",
@@ -623,6 +645,11 @@ const i18n = {
     "s7.title": "الخطوة 7 — أنشئوا ملف PDF",
     "s7.intro": "اضغطوا على الزر. ستُفتح نافذة الطباعة — اختاروا «حفظ كـ PDF». ارفعوا ذلك الملف إلى تودل.",
     "s7.button": "إنشاء PDF",
+    "s7.ready": "✅ تم ملء جميع الحقول المطلوبة — يمكنكم إنشاء ملف PDF.",
+    "s7.notReady": "أكملوا هذه الحقول لتمكين زر PDF:",
+    "s7.missingPlan": "خطة البناء ({n} من 4 أقسام فارغة)",
+    "s7.missingChanges": "سجل التغييرات (يلزم صف مكتمل واحد على الأقل: ماذا، لماذا، التأثير)",
+    "s7.missingInvoice": "أرقام الفاتورة: {list}",
 
     "unit.credits": "كريديت",
     "foot.saved": "تُحفظ أعمالكم تلقائيًا في هذا المتصفح.",
@@ -680,6 +707,7 @@ function applyLang(lang){
   );
   updateInvoice();
   renderRows();
+  updatePdfButton();
 }
 document.querySelectorAll('.lang-switch button').forEach(btn => {
   btn.addEventListener('click', () => applyLang(btn.dataset.lang));
@@ -716,18 +744,22 @@ function saveState(){
 }
 
 document.addEventListener('input', e => {
-  if (e.target.matches('[data-persist]')){
-    saveState();
-    if (e.target.matches('[data-inv]')) updateInvoice();
-  }
-  if (e.target.matches('[data-ch]')){
+  const isPersist = e.target.matches('[data-persist]');
+  const isChange  = e.target.matches('[data-ch]');
+  if (isPersist) saveState();
+  if (isChange){
     const i = +e.target.dataset.ch, f = e.target.dataset.field;
     if (changeRows[i]) changeRows[i][f] = e.target.value;
     saveState();
   }
+  if (isPersist && e.target.matches('[data-inv]')) updateInvoice();
+  if (isPersist || isChange) updatePdfButton();
 });
 document.addEventListener('change', e => {
-  if (e.target.matches('[data-persist]')) saveState();
+  if (e.target.matches('[data-persist]')){
+    saveState();
+    updatePdfButton();
+  }
 });
 
 /* =========================================================
@@ -757,6 +789,7 @@ function renderRows(){
       if (!changeRows.length) changeRows.push({what:'',why:'',effect:''});
       renderRows();
       saveState();
+      updatePdfButton();
     });
   });
 }
@@ -765,6 +798,7 @@ document.getElementById('addRowBtn').addEventListener('click', () => {
   changeRows.push({what:'',why:'',effect:''});
   renderRows();
   saveState();
+  updatePdfButton();
 });
 
 /* =========================================================
@@ -811,9 +845,62 @@ function computeBudgetScore(total){
 }
 
 /* =========================================================
-   6. PDF GENERATION
+   6. PDF READINESS
+   ========================================================= */
+function getMissingItems(){
+  const missing = [];
+
+  // 1. Construction plan (4 textareas)
+  const planIds = ['plan_order','plan_tools','plan_qc','plan_planb'];
+  const emptyPlan = planIds.filter(id => !document.getElementById(id).value.trim()).length;
+  if (emptyPlan > 0){
+    missing.push(t('s7.missingPlan').replace('{n}', emptyPlan));
+  }
+
+  // 2. Changes log (at least one complete row)
+  const hasCompleteRow = changeRows.some(r =>
+    (r.what || '').trim() && (r.why || '').trim() && (r.effect || '').trim()
+  );
+  if (!hasCompleteRow){
+    missing.push(t('s7.missingChanges'));
+  }
+
+  // 3. Invoice base figures (> 0)
+  const g = id => parseFloat(document.getElementById(id).value) || 0;
+  const invMissing = [];
+  if (g('inv_sheets_given') <= 0) invMissing.push(t('s6.sheetsGiven'));
+  if (g('inv_sheets_used')  <= 0) invMissing.push(t('s6.sheetsUsed'));
+  if (g('inv_tape_given')   <= 0) invMissing.push(t('s6.tapeGiven'));
+  if (g('inv_tape_used')    <= 0) invMissing.push(t('s6.tapeUsed'));
+  if (invMissing.length){
+    missing.push(t('s7.missingInvoice').replace('{list}', invMissing.join(', ')));
+  }
+
+  return missing;
+}
+
+function updatePdfButton(){
+  const btn = document.getElementById('pdfBtn');
+  const status = document.getElementById('pdfStatus');
+  if (!btn || !status) return;
+
+  const missing = getMissingItems();
+  if (missing.length === 0){
+    btn.disabled = false;
+    status.innerHTML = t('s7.ready');
+    status.className = 'pdf-status ready';
+  } else {
+    btn.disabled = true;
+    status.innerHTML = `<b>${esc(t('s7.notReady'))}</b><ul>${missing.map(m => `<li>${esc(m)}</li>`).join('')}</ul>`;
+    status.className = 'pdf-status not-ready';
+  }
+}
+
+/* =========================================================
+   7. PDF GENERATION
    ========================================================= */
 document.getElementById('pdfBtn').addEventListener('click', () => {
+  if (document.getElementById('pdfBtn').disabled) return;
   buildReport();
   setTimeout(() => window.print(), 150);
 });
@@ -894,12 +981,13 @@ function buildReport(){
 }
 
 /* =========================================================
-   7. INIT
+   8. INIT
    ========================================================= */
 loadState();
 applyLang(getLang());
 updateInvoice();
 renderRows();
+updatePdfButton();
 </script>
 </body>
 </html>
