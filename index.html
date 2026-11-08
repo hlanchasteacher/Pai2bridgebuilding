@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase C · Building the Bridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f8; --card:#ffffff; --ink:#0f1e35; --muted:#5b6b82;
+  --blue:#1d4ed8; --blue-dark:#12296b; --line:#d9e2f0;
+  --ok:#0b8f62; --ok-bg:#e6f7f0; --bad:#c81e1e; --bad-bg:#fdecec;
+  --accent:#f59e0b; --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+html[dir="rtl"] body{font-family:'Cairo',system-ui,-apple-system,sans-serif;line-height:1.85}
+h1,h2,h3{line-height:1.25;margin:0}
+p{margin:.4rem 0}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;padding:10px 20px;color:#fff;
+  background:rgba(18,41,107,.97);backdrop-filter:blur(8px);
+}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.3px}
+.lang-switch{display:flex;gap:4px;background:rgba(255,255,255,.14);padding:4px;border-radius:999px}
+.lang-switch button{
+  border:0;background:transparent;color:#dbe6f6;padding:6px 18px;border-radius:999px;
+  cursor:pointer;font:inherit;font-weight:700;font-size:.9rem;transition:.2s;
+}
+.lang-switch button.active{background:#fff;color:var(--blue-dark)}
+.lang-switch button:not(.active):hover{background:rgba(255,255,255,.12)}
+
+/* ---------- hero ---------- */
+.hero{
+  color:#fff;padding:44px 20px 38px;
+  background:
+    linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px) 0 0/30px 30px,
+    linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px) 0 0/30px 30px,
+    linear-gradient(135deg,#0f2054,#1d4ed8 65%,#2563eb);
+}
+.hero-inner{max-width:1000px;margin:0 auto}
+.hero-badge{
+  display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);
+  padding:4px 14px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+}
+.hero h1{font-size:clamp(1.6rem,4vw,2.4rem);margin:12px 0 6px;font-weight:800}
+.hero p{max-width:70ch;color:#dbe6f6;font-size:.98rem}
+
+/* ---------- nav ---------- */
+.steps-nav{
+  max-width:1000px;margin:-20px auto 0;padding:0 20px;position:relative;z-index:5;
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.steps-nav a{
+  background:#fff;color:var(--blue-dark);text-decoration:none;font-weight:700;font-size:.85rem;
+  padding:7px 14px;border-radius:999px;box-shadow:0 4px 14px rgba(15,30,53,.12);
+  border:1px solid var(--line);transition:.18s;
+}
+.steps-nav a:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ---------- layout ---------- */
+main{max-width:1000px;margin:0 auto;padding:24px 20px 60px}
+.card{
+  background:var(--card);border-radius:var(--radius);padding:24px;
+  box-shadow:0 6px 24px rgba(15,30,53,.07);border:1px solid var(--line);
+  margin-bottom:20px;scroll-margin-top:80px;
+}
+.card-head{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.step-badge{
+  flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#1d4ed8,#12296b);color:#fff;font-weight:800;font-size:1.1rem;
+}
+.card-head h2{font-size:clamp(1.1rem,2.4vw,1.4rem);font-weight:800}
+.lead{color:var(--muted);margin-bottom:14px;font-size:.95rem}
+
+/* ---------- forms ---------- */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.field label{font-weight:700;font-size:.9rem}
+.field .hint-text{font-size:.82rem;color:var(--muted);margin-top:-2px}
+input[type=number],input[type=text],textarea{
+  font:inherit;padding:9px 13px;border-radius:10px;border:1.5px solid var(--line);
+  background:#fff;color:var(--ink);width:100%;transition:.15s;
+}
+input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.13)}
+textarea{resize:vertical;min-height:70px;line-height:1.55}
+
+/* ---------- pricing table ---------- */
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+th{background:#f3f7fc;font-weight:800;font-size:.85rem;color:var(--blue-dark)}
+tr:last-child td{border-bottom:0}
+.price-tag{font-weight:800;color:var(--blue-dark)}
+.score-cell{font-weight:800;color:var(--blue-dark);white-space:nowrap}
+
+/* ---------- callout ---------- */
+.callout{
+  border-radius:12px;padding:14px 16px;margin:14px 0;font-size:.93rem;
+  background:#eef4ff;border-left:5px solid var(--blue);
+}
+html[dir="rtl"] .callout{border-left:0;border-right:5px solid var(--blue)}
+.callout b{display:block;margin-bottom:3px}
+.callout.warn{background:#fffbeb;border-left-color:var(--accent)}
+html[dir="rtl"] .callout.warn{border-right-color:var(--accent)}
+.callout.alert{background:var(--bad-bg);border-left-color:var(--bad)}
+html[dir="rtl"] .callout.alert{border-right-color:var(--bad)}
+
+/* ---------- checklist ---------- */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:.94rem;cursor:pointer}
+.check input{margin-top:4px;width:18px;height:18px;accent-color:var(--blue);flex:none;cursor:pointer}
+
+/* ---------- buttons ---------- */
+.btn{
+  border:0;border-radius:10px;padding:9px 18px;font:inherit;font-weight:700;font-size:.9rem;
+  cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-ghost{background:#fff;color:var(--blue-dark);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-remove{background:#fff;color:var(--bad);border:1.5px solid #f3c9c9;padding:4px 10px;border-radius:8px;cursor:pointer;font-weight:800}
+.btn-remove:hover{background:var(--bad);color:#fff}
+
+/* ---------- changes table ---------- */
+.changes-table textarea{min-height:56px;font-size:.88rem}
+.changes-table td{padding:6px}
+
+/* ---------- invoice ---------- */
+.inv-grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:720px){.inv-grid{grid-template-columns:1fr}}
+.inv-out{background:#f8fafd;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:14px}
+.line{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:.93rem}
+.line b{font-variant-numeric:tabular-nums}
+.line.total{border-top:2px solid var(--line);margin-top:4px;padding-top:12px;font-size:1.05rem;font-weight:800}
+.line.total b{color:var(--blue-dark)}
+.score-box{
+  margin-top:12px;padding:12px 16px;border-radius:12px;background:var(--ok-bg);
+  border:1.5px solid #b9e6d3;font-weight:800;color:var(--ok);
+}
+.score-box.alert{background:var(--bad-bg);border-color:#f3c9c9;color:var(--bad)}
+
+/* ---------- footer ---------- */
+.footer{max-width:1000px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:.85rem;text-align:center}
+
+/* ---------- report (hidden on screen, shown on print) ---------- */
+#report{display:none}
+.report-page{font-family:'Nunito',system-ui,sans-serif;color:#111;line-height:1.55;padding:10mm}
+.report-page h1{font-size:1.5rem;margin:0 0 4px}
+.report-page h2{font-size:1.05rem;margin:16px 0 6px;border-bottom:1px solid #999;padding-bottom:3px}
+.report-page .meta{font-size:.85rem;color:#555;margin-bottom:14px}
+.report-page p{margin:4px 0;font-size:.92rem}
+.report-page table{font-size:.85rem}
+.report-page th,.report-page td{padding:5px 8px;border:1px solid #bbb}
+.report-page th{background:#eee}
+.report-page .label{font-weight:800}
+.report-page .empty{color:#888;font-style:italic}
+.report-page .block{margin:6px 0 10px;padding:8px 10px;background:#f7f7f7;border:1px solid #ddd;border-radius:6px;white-space:pre-wrap;font-size:.9rem}
+
+/* ---------- print ---------- */
+@media print{
+  body{background:#fff;margin:0}
+  .topbar,.steps-nav,.hero,main,.footer{display:none!important}
+  #report{display:block!important}
+  @page{margin:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+  <div class="brand">🔨 <span data-i18n="app.title">Phase C · Building the Bridge</span></div>
+  <div class="lang-switch">
+    <button data-lang="en" class="active">English</button>
+    <button data-lang="ar">العربية</button>
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-inner">
+    <span class="hero-badge" data-i18n="hero.badge">Technology · PAI 2</span>
+    <h1 data-i18n="hero.title">Phase C — Building the Bridge</h1>
+    <p data-i18n="hero.subtitle">Two sessions. Build your bridge, test it, document it, and generate your PDF for Toddle.</p>
+  </div>
+</header>
+
+<!-- ================= NAV ================= -->
+<nav class="steps-nav">
+  <a href="#s1" data-i18n="nav.s1">1 · Plan</a>
+  <a href="#s2" data-i18n="nav.s2">2 · Materials</a>
+  <a href="#s3" data-i18n="nav.s3">3 · Build</a>
+  <a href="#s4" data-i18n="nav.s4">4 · Test</a>
+  <a href="#s5" data-i18n="nav.s5">5 · Changes</a>
+  <a href="#s6" data-i18n="nav.s6">6 · Invoice</a>
+  <a href="#s7" data-i18n="nav.s7">7 · PDF</a>
+</nav>
+
+<main>
+
+  <!-- ============ STEP 1: CONSTRUCTION PLAN ============ -->
+  <section class="card" id="s1">
+    <div class="card-head">
+      <span class="step-badge">1</span>
+      <h2 data-i18n="s1.title">Step 1 — Construction Plan</h2>
+    </div>
+    <p class="lead" data-i18n="s1.intro">Before you touch any material, write your construction plan. This is part of your grade (Criterion C, strand i).</p>
+
+    <div class="field">
+      <label for="plan_order" data-i18n="s1.q1.label">1. Order of assembly</label>
+      <span class="hint-text" data-i18n="s1.q1.hint">What do you build first, next, last?</span>
+      <textarea id="plan_order" data-persist rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="plan_tools" data-i18n="s1.q2.label">2. Tools for each step</label>
+      <span class="hint-text" data-i18n="s1.q2.hint">What do you use at each step? (scissors, ruler, hands…)</span>
+      <textarea id="plan_tools" data-persist rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="plan_qc" data-i18n="s1.q3.label">3. Quality control</label>
+      <span class="hint-text" data-i18n="s1.q3.hint">How do you check that each piece measures what it should and that joints hold?</span>
+      <textarea id="plan_qc" data-persist rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="plan_planb" data-i18n="s1.q4.label">4. Plan B</label>
+      <span class="hint-text" data-i18n="s1.q4.hint">If a piece goes wrong or you run out of material, what do you do? Will you ask for extra material? How much? Why?</span>
+      <textarea id="plan_planb" data-persist rows="3"></textarea>
+    </div>
+  </section>
+
+  <!-- ============ STEP 2: MATERIALS + SURCHARGE ============ -->
+  <section class="card" id="s2">
+    <div class="card-head">
+      <span class="step-badge">2</span>
+      <h2 data-i18n="s2.title">Step 2 — Go to the supplier (teacher's desk)</h2>
+    </div>
+    <p class="lead" data-i18n="s2.intro">Take your Phase B invoice to the teacher's desk and collect your materials. You will receive exactly what you ordered.</p>
+
+    <div class="callout">
+      <b data-i18n="s2.rule1.title">You receive exactly what you ordered</b>
+      <span data-i18n="s2.rule1.text">The sheets and tape from your Phase B invoice. No more, no less.</span>
+    </div>
+
+    <div class="callout warn">
+      <b data-i18n="s2.rule2.title">If you run out, you can ask for extra — but prices have gone up</b>
+      <span data-i18n="s2.rule2.text">Extra material is charged at a higher price. That extra cost is called the surcharge.</span>
+    </div>
+
+    <h3 style="font-size:1rem;margin:18px 0 6px" data-i18n="s2.prices.title">Extra material prices (surcharge)</h3>
+    <table>
+      <tr>
+        <th data-i18n="s2.prices.col1">Material</th>
+        <th data-i18n="s2.prices.col2">Extra price</th>
+      </tr>
+      <tr>
+        <td data-i18n="s2.prices.paper">Paper — extra A4 sheet</td>
+        <td class="price-tag">1,500 <span data-i18n="unit.credits">credits</span></td>
+      </tr>
+      <tr>
+        <td data-i18n="s2.prices.tape">Tape — extra 10 cm strip</td>
+        <td class="price-tag">150 <span data-i18n="unit.credits">credits</span></td>
+      </tr>
+    </table>
+    <p style="font-size:.88rem;color:var(--muted)" data-i18n="s2.prices.max">Maximum extra: 5 sheets per team (7,500 credits).</p>
+
+    <h3 style="font-size:1rem;margin:18px 0 6px" data-i18n="s2.calc.title">How the surcharge is calculated</h3>
+    <p style="font-size:.92rem" data-i18n="s2.calc.formula">Surcharge = (extra sheets × 1,500) + (extra tape cm ÷ 10 × 150)</p>
+
+    <h3 style="font-size:1rem;margin:18px 0 6px" data-i18n="s2.budget.title">Additional rubric criterion: budget management</h3>
+    <p style="font-size:.92rem" data-i18n="s2.budget.intro">This assignment's rubric includes an extra criterion for budget management, scored out of 8. Your total real cost (Phase B invoice + surcharge) determines the score on this criterion. It does not cap your Criterion C mark — it is scored alongside it.</p>
+    <table>
+      <tr>
+        <th data-i18n="s2.budget.col1">Total real cost</th>
+        <th data-i18n="s2.budget.col2">Budget criterion score (out of 8)</th>
+      </tr>
+      <tr><td>≤ 10,000 <span data-i18n="unit.credits">credits</span></td><td class="score-cell">8</td></tr>
+      <tr><td>10,001 – 10,500</td><td class="score-cell">7</td></tr>
+      <tr><td>10,501 – 11,000</td><td class="score-cell">6</td></tr>
+      <tr><td>11,001 – 12,000</td><td class="score-cell">5</td></tr>
+      <tr><td>12,001 – 13,000</td><td class="score-cell">4</td></tr>
+      <tr><td>13,001 – 14,000</td><td class="score-cell">3</td></tr>
+      <tr><td>14,001 – 15,000</td><td class="score-cell">2</td></tr>
+      <tr><td data-i18n="s2.budget.rowLast">&gt; 15,000</td><td class="score-cell">1</td></tr>
+    </table>
+
+    <div class="callout alert">
+      <b data-i18n="s2.alert.title">Careful</b>
+      <span data-i18n="s2.alert.text">The higher your total real cost, the lower your score on the budget criterion. Stay under 10,000 credits to score the full 8 on this criterion.</span>
+    </div>
+  </section>
+
+  <!-- ============ STEP 3: BUILD ============ -->
+  <section class="card" id="s3">
+    <div class="card-head">
+      <span class="step-badge">3</span>
+      <h2 data-i18n="s3.title">Step 3 — Build</h2>
+    </div>
+    <p class="lead" data-i18n="s3.intro">Build your bridge following your Phase B blueprint and your construction plan.</p>
+    <label class="check"><input type="checkbox" data-persist id="build1"><span data-i18n="s3.c1">Follow your blueprint and your construction plan step by step.</span></label>
+    <label class="check"><input type="checkbox" data-persist id="build2"><span data-i18n="s3.c2">Measure twice before you cut.</span></label>
+    <label class="check"><input type="checkbox" data-persist id="build3"><span data-i18n="s3.c3">Keep your offcuts — they can reinforce joints.</span></label>
+    <label class="check"><input type="checkbox" data-persist id="build4"><span data-i18n="s3.c4">Tape only joins pieces — it must not wrap or laminate the paper.</span></label>
+    <label class="check"><input type="checkbox" data-persist id="build5"><span data-i18n="s3.c5">If you ask for extra material, write it down immediately in your final invoice.</span></label>
+    <label class="check"><input type="checkbox" data-persist id="build6"><span data-i18n="s3.c6">At the end of Session 1, store all pieces in a box or bag with your team name.</span></label>
+  </section>
+
+  <!-- ============ STEP 4: TEST & DOCUMENT ============ -->
+  <section class="card" id="s4">
+    <div class="card-head">
+      <span class="step-badge">4</span>
+      <h2 data-i18n="s4.title">Step 4 — Test and document</h2>
+    </div>
+    <p class="lead" data-i18n="s4.intro">Place your bridge on the 30 cm gap and check it.</p>
+
+    <label class="check"><input type="checkbox" data-persist id="test1"><span data-i18n="s4.c1">Does it cross the gap completely?</span></label>
+    <label class="check"><input type="checkbox" data-persist id="test2"><span data-i18n="s4.c2">Does it rest freely — no tape on the desks?</span></label>
+    <label class="check"><input type="checkbox" data-persist id="test3"><span data-i18n="s4.c3">Does it hold the weight the teacher indicates (optional load test)?</span></label>
+
+    <div class="callout alert" style="margin-top:16px">
+      <b data-i18n="s4.callTeacher.title">⚠️ Call the teacher to take the photos</b>
+      <span data-i18n="s4.callTeacher.text">The teacher must take the photos — not you. This guarantees the photos are authentic and well-lit.</span>
+    </div>
+  </section>
+
+  <!-- ============ STEP 5: CHANGES LOG ============ -->
+  <section class="card" id="s5">
+    <div class="card-head">
+      <span class="step-badge">5</span>
+      <h2 data-i18n="s5.title">Step 5 — Changes log</h2>
+    </div>
+    <p class="lead" data-i18n="s5.intro">Record at least one change you made compared to the blueprint. If nothing changed, say so and explain why.</p>
+
+    <table class="changes-table">
+      <thead>
+        <tr>
+          <th data-i18n="s5.col1">What changed vs. the blueprint?</th>
+          <th data-i18n="s5.col2">Why?</th>
+          <th data-i18n="s5.col3">What effect did it have?</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="changesBody"></tbody>
+    </table>
+    <button class="btn btn-ghost" id="addRowBtn" style="margin-top:8px">＋ <span data-i18n="s5.addRow">Add a change</span></button>
+  </section>
+
+  <!-- ============ STEP 6: FINAL INVOICE ============ -->
+  <section class="card" id="s6">
+    <div class="card-head">
+      <span class="step-badge">6</span>
+      <h2 data-i18n="s6.title">Step 6 — Final invoice</h2>
+    </div>
+    <p class="lead" data-i18n="s6.intro">Fill in the figures from your Phase B invoice and the extra material you requested.</p>
+
+    <div class="inv-grid">
+      <div class="field">
+        <label for="inv_sheets_given" data-i18n="s6.sheetsGiven">Sheets received (Phase B invoice)</label>
+        <input type="number" id="inv_sheets_given" min="0" step="1" value="0" data-persist data-inv>
+      </div>
+      <div class="field">
+        <label for="inv_sheets_used" data-i18n="s6.sheetsUsed">Sheets used</label>
+        <input type="number" id="inv_sheets_used" min="0" step="1" value="0" data-persist data-inv>
+      </div>
+      <div class="field">
+        <label for="inv_sheets_extra" data-i18n="s6.sheetsExtra">Extra sheets requested (surcharge)</label>
+        <input type="number" id="inv_sheets_extra" min="0" max="5" step="1" value="0" data-persist data-inv>
+      </div>
+      <div class="field">
+        <label for="inv_tape_given" data-i18n="s6.tapeGiven">Tape received (cm, Phase B invoice)</label>
+        <input type="number" id="inv_tape_given" min="0" step="1" value="0" data-persist data-inv>
+      </div>
+      <div class="field">
+        <label for="inv_tape_used" data-i18n="s6.tapeUsed">Tape used (cm)</label>
+        <input type="number" id="inv_tape_used" min="0" step="1" value="0" data-persist data-inv>
+      </div>
+      <div class="field">
+        <label for="inv_tape_extra" data-i18n="s6.tapeExtra">Extra tape requested (cm, surcharge)</label>
+        <input type="number" id="inv_tape_extra" min="0" step="1" value="0" data-persist data-inv>
+      </div>
+    </div>
+
+    <div class="inv-out">
+      <div class="line"><span data-i18n="s6.origCost">Original cost (Phase B invoice)</span><b id="out_orig">0</b></div>
+      <div class="line"><span data-i18n="s6.sheetsExtraCost">Extra sheets</span><b id="out_sheetsExtra">0</b></div>
+      <div class="line"><span data-i18n="s6.tapeExtraCost">Extra tape</span><b id="out_tapeExtra">0</b></div>
+      <div class="line"><span data-i18n="s6.surcharge">Total surcharge</span><b id="out_surcharge">0</b></div>
+      <div class="line total"><span data-i18n="s6.totalReal">Total real cost</span><b id="out_total">0</b></div>
+      <div class="score-box" id="scoreBox">
+        <span data-i18n="s6.budgetScoreLabel">Budget criterion score (out of 8):</span>
+        <span id="out_score">8</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STEP 7: PDF ============ -->
+  <section class="card" id="s7">
+    <div class="card-head">
+      <span class="step-badge">7</span>
+      <h2 data-i18n="s7.title">Step 7 — Generate your PDF</h2>
+    </div>
+    <p class="lead" data-i18n="s7.intro">Click the button. A print dialog will open — choose "Save as PDF". Upload that PDF to Toddle.</p>
+    <button class="btn btn-primary" id="pdfBtn" style="font-size:1rem;padding:12px 24px">📄 <span data-i18n="s7.button">Generate PDF</span></button>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p data-i18n="foot.saved">Your work is saved automatically in this browser.</p>
+</footer>
+
+<!-- ============ REPORT (hidden on screen, used for PDF) ============ -->
+<div id="report"></div>
+
+<script>
+/* =========================================================
+   1. TRANSLATIONS
+   ========================================================= */
+const i18n = {
+  en: {
+    "app.title": "Phase C · Building the Bridge",
+    "hero.badge": "Technology · PAI 2",
+    "hero.title": "Phase C — Building the Bridge",
+    "hero.subtitle": "Two sessions. Build your bridge, test it, document it, and generate your PDF for Toddle.",
+    "nav.s1": "1 · Plan", "nav.s2": "2 · Materials", "nav.s3": "3 · Build",
+    "nav.s4": "4 · Test", "nav.s5": "5 · Changes", "nav.s6": "6 · Invoice", "nav.s7": "7 · PDF",
+
+    "s1.title": "Step 1 — Construction Plan",
+    "s1.intro": "Before you touch any material, write your construction plan. This is part of your grade (Criterion C, strand i).",
+    "s1.q1.label": "1. Order of assembly",
+    "s1.q1.hint": "What do you build first, next, last?",
+    "s1.q2.label": "2. Tools for each step",
+    "s1.q2.hint": "What do you use at each step? (scissors, ruler, hands…)",
+    "s1.q3.label": "3. Quality control",
+    "s1.q3.hint": "How do you check that each piece measures what it should and that joints hold?",
+    "s1.q4.label": "4. Plan B",
+    "s1.q4.hint": "If a piece goes wrong or you run out of material, what do you do? Will you ask for extra material? How much? Why?",
+
+    "s2.title": "Step 2 — Go to the supplier (teacher's desk)",
+    "s2.intro": "Take your Phase B invoice to the teacher's desk and collect your materials. You will receive exactly what you ordered.",
+    "s2.rule1.title": "You receive exactly what you ordered",
+    "s2.rule1.text": "The sheets and tape from your Phase B invoice. No more, no less.",
+    "s2.rule2.title": "If you run out, you can ask for extra — but prices have gone up",
+    "s2.rule2.text": "Extra material is charged at a higher price. That extra cost is called the surcharge.",
+    "s2.prices.title": "Extra material prices (surcharge)",
+    "s2.prices.col1": "Material",
+    "s2.prices.col2": "Extra price",
+    "s2.prices.paper": "Paper — extra A4 sheet",
+    "s2.prices.tape": "Tape — extra 10 cm strip",
+    "s2.prices.max": "Maximum extra: 5 sheets per team (7,500 credits).",
+    "s2.calc.title": "How the surcharge is calculated",
+    "s2.calc.formula": "Surcharge = (extra sheets × 1,500) + (extra tape cm ÷ 10 × 150)",
+    "s2.budget.title": "Additional rubric criterion: budget management",
+    "s2.budget.intro": "This assignment's rubric includes an extra criterion for budget management, scored out of 8. Your total real cost (Phase B invoice + surcharge) determines the score on this criterion. It does not cap your Criterion C mark — it is scored alongside it.",
+    "s2.budget.col1": "Total real cost",
+    "s2.budget.col2": "Budget criterion score (out of 8)",
+    "s2.budget.rowLast": "> 15,000",
+    "s2.alert.title": "Careful",
+    "s2.alert.text": "The higher your total real cost, the lower your score on the budget criterion. Stay under 10,000 credits to score the full 8 on this criterion.",
+
+    "s3.title": "Step 3 — Build",
+    "s3.intro": "Build your bridge following your Phase B blueprint and your construction plan.",
+    "s3.c1": "Follow your blueprint and your construction plan step by step.",
+    "s3.c2": "Measure twice before you cut.",
+    "s3.c3": "Keep your offcuts — they can reinforce joints.",
+    "s3.c4": "Tape only joins pieces — it must not wrap or laminate the paper.",
+    "s3.c5": "If you ask for extra material, write it down immediately in your final invoice.",
+    "s3.c6": "At the end of Session 1, store all pieces in a box or bag with your team name.",
+
+    "s4.title": "Step 4 — Test and document",
+    "s4.intro": "Place your bridge on the 30 cm gap and check it.",
+    "s4.c1": "Does it cross the gap completely?",
+    "s4.c2": "Does it rest freely — no tape on the desks?",
+    "s4.c3": "Does it hold the weight the teacher indicates (optional load test)?",
+    "s4.callTeacher.title": "⚠️ Call the teacher to take the photos",
+    "s4.callTeacher.text": "The teacher must take the photos — not you. This guarantees the photos are authentic and well-lit.",
+
+    "s5.title": "Step 5 — Changes log",
+    "s5.intro": "Record at least one change you made compared to the blueprint. If nothing changed, say so and explain why.",
+    "s5.col1": "What changed vs. the blueprint?",
+    "s5.col2": "Why?",
+    "s5.col3": "What effect did it have?",
+    "s5.addRow": "Add a change",
+
+    "s6.title": "Step 6 — Final invoice",
+    "s6.intro": "Fill in the figures from your Phase B invoice and the extra material you requested.",
+    "s6.sheetsGiven": "Sheets received (Phase B invoice)",
+    "s6.sheetsUsed": "Sheets used",
+    "s6.sheetsExtra": "Extra sheets requested (surcharge)",
+    "s6.tapeGiven": "Tape received (cm, Phase B invoice)",
+    "s6.tapeUsed": "Tape used (cm)",
+    "s6.tapeExtra": "Extra tape requested (cm, surcharge)",
+    "s6.origCost": "Original cost (Phase B invoice)",
+    "s6.sheetsExtraCost": "Extra sheets",
+    "s6.tapeExtraCost": "Extra tape",
+    "s6.surcharge": "Total surcharge",
+    "s6.totalReal": "Total real cost",
+    "s6.budgetScoreLabel": "Budget criterion score (out of 8):",
+
+    "s7.title": "Step 7 — Generate your PDF",
+    "s7.intro": "Click the button. A print dialog will open — choose \"Save as PDF\". Upload that PDF to Toddle.",
+    "s7.button": "Generate PDF",
+
+    "unit.credits": "credits",
+    "foot.saved": "Your work is saved automatically in this browser.",
+
+    "report.title": "Phase C — Building the Bridge",
+    "report.date": "Generated",
+    "report.plan": "1. Construction Plan",
+    "report.planOrder": "Order of assembly",
+    "report.planTools": "Tools for each step",
+    "report.planQC": "Quality control",
+    "report.planPlanB": "Plan B",
+    "report.changes": "2. Changes log",
+    "report.invoice": "3. Final invoice",
+    "report.chWhat": "What changed",
+    "report.chWhy": "Why",
+    "report.chEffect": "Effect",
+    "report.empty": "(not filled in)",
+    "report.invSheetsGiven": "Sheets received",
+    "report.invSheetsUsed": "Sheets used",
+    "report.invSheetsExtra": "Extra sheets requested",
+    "report.invTapeGiven": "Tape received (cm)",
+    "report.invTapeUsed": "Tape used (cm)",
+    "report.invTapeExtra": "Extra tape requested (cm)",
+    "report.invOrig": "Original cost",
+    "report.invSur": "Total surcharge",
+    "report.invTotal": "Total real cost",
+    "report.invBudget": "Budget criterion score (out of 8)"
+  },
+
+  ar: {
+    "app.title": "المرحلة ج · بناء الجسر",
+    "hero.badge": "التكنولوجيا · PAI 2",
+    "hero.title": "المرحلة ج — بناء الجسر",
+    "hero.subtitle": "حصتان. ابنوا جسركم، اختبروه، وثّقوه، وأنشئوا ملف PDF لتودل.",
+    "nav.s1": "1 · الخطة", "nav.s2": "2 · المواد", "nav.s3": "3 · البناء",
+    "nav.s4": "4 · الاختبار", "nav.s5": "5 · التغييرات", "nav.s6": "6 · الفاتورة", "nav.s7": "7 · PDF",
+
+    "s1.title": "الخطوة 1 — خطة البناء",
+    "s1.intro": "قبل أن تلمسوا أي مادة، اكتبوا خطة البناء. هذا جزء من تقييمكم (المعيار ج، البند i).",
+    "s1.q1.label": "1. ترتيب التجميع",
+    "s1.q1.hint": "ماذا تبنون أولًا، ثم ماذا، وأخيرًا؟",
+    "s1.q2.label": "2. الأدوات في كل خطوة",
+    "s1.q2.hint": "ماذا تستخدمون في كل خطوة؟ (المقص، المسطرة، الأيدي…)",
+    "s1.q3.label": "3. ضبط الجودة",
+    "s1.q3.hint": "كيف تتأكدون أن كل قطعة بالقياس المطلوب وأن الوصلات تتحمل؟",
+    "s1.q4.label": "4. الخطة البديلة",
+    "s1.q4.hint": "إذا خرجت قطعة بشكل خاطئ أو نفدت المواد، ماذا تفعلون؟ هل ستطلبون مواد إضافية؟ كم؟ ولماذا؟",
+
+    "s2.title": "الخطوة 2 — اذهبوا إلى المورد (مكتب المعلم)",
+    "s2.intro": "خذوا فاتورة المرحلة ب إلى مكتب المعلم واستلموا موادكم. ستستلمون بالضبط ما طلبتموه.",
+    "s2.rule1.title": "تستلمون بالضبط ما طلبتموه",
+    "s2.rule1.text": "الأوراق واللاصق من فاتورة المرحلة ب. لا أكثر ولا أقل.",
+    "s2.rule2.title": "إذا نفدت موادكم، يمكنكم طلب مواد إضافية — لكن الأسعار ارتفعت",
+    "s2.rule2.text": "تُحتسب المواد الإضافية بسعر أعلى. هذه التكلفة الإضافية تسمى الرسوم الإضافية.",
+    "s2.prices.title": "أسعار المواد الإضافية (الرسوم الإضافية)",
+    "s2.prices.col1": "المادة",
+    "s2.prices.col2": "السعر الإضافي",
+    "s2.prices.paper": "الورق — ورقة A4 إضافية",
+    "s2.prices.tape": "اللاصق — شريط 10 سم إضافي",
+    "s2.prices.max": "الحد الأقصى الإضافي: 5 أوراق لكل فريق (7,500 كريديت).",
+    "s2.calc.title": "كيف تُحسب الرسوم الإضافية",
+    "s2.calc.formula": "الرسوم الإضافية = (الأوراق الإضافية × 1,500) + (سنتيمترات اللاصق الإضافية ÷ 10 × 150)",
+    "s2.budget.title": "معيار إضافي في التقييم: إدارة الميزانية",
+    "s2.budget.intro": "تتضمن رُبريك هذه المهمة معيارًا إضافيًا لإدارة الميزانية، يُقيَّم من 8. تحدد تكلفتكم الإجمالية الحقيقية (فاتورة المرحلة ب + الرسوم الإضافية) الدرجة في هذا المعيار. هذا المعيار لا يحدّ من درجة المعيار ج — بل يُقيَّم إلى جانبها.",
+    "s2.budget.col1": "التكلفة الإجمالية الحقيقية",
+    "s2.budget.col2": "درجة معيار الميزانية (من 8)",
+    "s2.budget.rowLast": "أكثر من 15,000",
+    "s2.alert.title": "انتبهوا",
+    "s2.alert.text": "كلما ارتفعت تكلفتكم الإجمالية الحقيقية، انخفضت درجتكم في معيار الميزانية. ابقوا تحت 10,000 كريديت لتحصلوا على الدرجة الكاملة 8 في هذا المعيار.",
+
+    "s3.title": "الخطوة 3 — البناء",
+    "s3.intro": "ابنوا جسركم وفقًا لمخطط المرحلة ب وخطة البناء.",
+    "s3.c1": "اتبعوا مخططكم وخطة البناء خطوة بخطوة.",
+    "s3.c2": "قيسوا مرتين قبل القص.",
+    "s3.c3": "احتفظوا ببقايا القص — يمكن أن تقوّي الوصلات.",
+    "s3.c4": "اللاصق يصل القطع فقط — لا يجب أن يلفّ الورق أو يغطيه.",
+    "s3.c5": "إذا طلبتم مواد إضافية، سجّلوها فورًا في فاتورتكم النهائية.",
+    "s3.c6": "في نهاية الحصة الأولى، ضعوا كل القطع في صندوق أو كيس باسم فريقكم.",
+
+    "s4.title": "الخطوة 4 — الاختبار والتوثيق",
+    "s4.intro": "ضعوا جسركم على الفجوة (30 سم) وتحققوا منه.",
+    "s4.c1": "هل يعبر الفجوة بالكامل؟",
+    "s4.c2": "هل يستند بشكل حر — دون لاصق على الطاولات؟",
+    "s4.c3": "هل يتحمل الوزن الذي يحدده المعلم (اختبار حمل اختياري)؟",
+    "s4.callTeacher.title": "⚠️ نادوا المعلم لالتقاط الصور",
+    "s4.callTeacher.text": "يجب أن يلتقط المعلم الصور — لا أنتم. هذا يضمن أن الصور أصلية وجيدة الإضاءة.",
+
+    "s5.title": "الخطوة 5 — سجل التغييرات",
+    "s5.intro": "سجّلوا تغييرًا واحدًا على الأقل مقارنة بالمخطط. إذا لم يتغير شيء، اذكروا ذلك واشرحوا السبب.",
+    "s5.col1": "ماذا تغير مقارنة بالمخطط؟",
+    "s5.col2": "لماذا؟",
+    "s5.col3": "ما التأثير الذي أحدثه؟",
+    "s5.addRow": "إضافة تغيير",
+
+    "s6.title": "الخطوة 6 — الفاتورة النهائية",
+    "s6.intro": "املأوا الأرقام من فاتورة المرحلة ب والمواد الإضافية التي طلبتموها.",
+    "s6.sheetsGiven": "الأوراق المستلمة (فاتورة المرحلة ب)",
+    "s6.sheetsUsed": "الأوراق المستخدمة",
+    "s6.sheetsExtra": "الأوراق الإضافية المطلوبة (رسوم إضافية)",
+    "s6.tapeGiven": "اللاصق المستلم (سم، فاتورة المرحلة ب)",
+    "s6.tapeUsed": "اللاصق المستخدم (سم)",
+    "s6.tapeExtra": "اللاصق الإضافي المطلوب (سم، رسوم إضافية)",
+    "s6.origCost": "التكلفة الأصلية (فاتورة المرحلة ب)",
+    "s6.sheetsExtraCost": "الأوراق الإضافية",
+    "s6.tapeExtraCost": "اللاصق الإضافي",
+    "s6.surcharge": "إجمالي الرسوم الإضافية",
+    "s6.totalReal": "التكلفة الإجمالية الحقيقية",
+    "s6.budgetScoreLabel": "درجة معيار الميزانية (من 8):",
+
+    "s7.title": "الخطوة 7 — أنشئوا ملف PDF",
+    "s7.intro": "اضغطوا على الزر. ستُفتح نافذة الطباعة — اختاروا «حفظ كـ PDF». ارفعوا ذلك الملف إلى تودل.",
+    "s7.button": "إنشاء PDF",
+
+    "unit.credits": "كريديت",
+    "foot.saved": "تُحفظ أعمالكم تلقائيًا في هذا المتصفح.",
+
+    "report.title": "المرحلة ج — بناء الجسر",
+    "report.date": "تاريخ الإنشاء",
+    "report.plan": "1. خطة البناء",
+    "report.planOrder": "ترتيب التجميع",
+    "report.planTools": "الأدوات في كل خطوة",
+    "report.planQC": "ضبط الجودة",
+    "report.planPlanB": "الخطة البديلة",
+    "report.changes": "2. سجل التغييرات",
+    "report.invoice": "3. الفاتورة النهائية",
+    "report.chWhat": "ماذا تغير",
+    "report.chWhy": "لماذا",
+    "report.chEffect": "التأثير",
+    "report.empty": "(لم يُملأ)",
+    "report.invSheetsGiven": "الأوراق المستلمة",
+    "report.invSheetsUsed": "الأوراق المستخدمة",
+    "report.invSheetsExtra": "الأوراق الإضافية المطلوبة",
+    "report.invTapeGiven": "اللاصق المستلم (سم)",
+    "report.invTapeUsed": "اللاصق المستخدم (سم)",
+    "report.invTapeExtra": "اللاصق الإضافي المطلوب (سم)",
+    "report.invOrig": "التكلفة الأصلية",
+    "report.invSur": "إجمالي الرسوم الإضافية",
+    "report.invTotal": "التكلفة الإجمالية الحقيقية",
+    "report.invBudget": "درجة معيار الميزانية (من 8)"
+  }
+};
+
+const PAPER_BASE = 1000;
+const TAPE_BASE_PER_STRIP = 100;
+const PAPER_EXTRA = 1500;
+const TAPE_EXTRA_PER_STRIP = 150;
+
+const getLang = () => localStorage.getItem('phaseC_lang') || 'en';
+const t = key => (i18n[getLang()][key] !== undefined ? i18n[getLang()][key] : key);
+const fmt = n => new Intl.NumberFormat('en-US').format(n);
+
+/* =========================================================
+   2. LANGUAGE
+   ========================================================= */
+function applyLang(lang){
+  localStorage.setItem('phaseC_lang', lang);
+  const dict = i18n[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (dict[k] !== undefined) el.textContent = dict[k];
+  });
+  document.querySelectorAll('.lang-switch button').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === lang)
+  );
+  updateInvoice();
+  renderRows();
+}
+document.querySelectorAll('.lang-switch button').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+/* =========================================================
+   3. STATE
+   ========================================================= */
+const STATE_KEY = 'phaseC_state';
+
+function loadState(){
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(STATE_KEY) || '{}'); } catch(e){}
+  document.querySelectorAll('[data-persist]').forEach(el => {
+    if (!el.id || !(el.id in data)) return;
+    if (el.type === 'checkbox') el.checked = data[el.id];
+    else el.value = data[el.id];
+  });
+  changeRows = Array.isArray(data.__changes) ? data.__changes : [{what:'',why:'',effect:''}];
+}
+
+let saveTimer;
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const data = {};
+    document.querySelectorAll('[data-persist]').forEach(el => {
+      if (!el.id) return;
+      data[el.id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    data.__changes = changeRows;
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(data)); } catch(e){}
+  }, 200);
+}
+
+document.addEventListener('input', e => {
+  if (e.target.matches('[data-persist]')){
+    saveState();
+    if (e.target.matches('[data-inv]')) updateInvoice();
+  }
+  if (e.target.matches('[data-ch]')){
+    const i = +e.target.dataset.ch, f = e.target.dataset.field;
+    if (changeRows[i]) changeRows[i][f] = e.target.value;
+    saveState();
+  }
+});
+document.addEventListener('change', e => {
+  if (e.target.matches('[data-persist]')) saveState();
+});
+
+/* =========================================================
+   4. CHANGES LOG
+   ========================================================= */
+let changeRows = [{what:'',why:'',effect:''}];
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function renderRows(){
+  const body = document.getElementById('changesBody');
+  body.innerHTML = '';
+  changeRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><textarea data-ch="${i}" data-field="what" rows="2">${esc(row.what)}</textarea></td>
+      <td><textarea data-ch="${i}" data-field="why" rows="2">${esc(row.why)}</textarea></td>
+      <td><textarea data-ch="${i}" data-field="effect" rows="2">${esc(row.effect)}</textarea></td>
+      <td><button class="btn-remove" data-remove="${i}" title="Remove">×</button></td>
+    `;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.remove;
+      changeRows.splice(i, 1);
+      if (!changeRows.length) changeRows.push({what:'',why:'',effect:''});
+      renderRows();
+      saveState();
+    });
+  });
+}
+
+document.getElementById('addRowBtn').addEventListener('click', () => {
+  changeRows.push({what:'',why:'',effect:''});
+  renderRows();
+  saveState();
+});
+
+/* =========================================================
+   5. INVOICE CALCULATOR
+   ========================================================= */
+function updateInvoice(){
+  const g = id => Math.max(0, parseFloat(document.getElementById(id).value) || 0);
+  const sheetsGiven = g('inv_sheets_given');
+  const sheetsUsed  = g('inv_sheets_used');
+  const sheetsExtra = g('inv_sheets_extra');
+  const tapeGiven   = g('inv_tape_given');
+  const tapeUsed    = g('inv_tape_used');
+  const tapeExtra   = g('inv_tape_extra');
+
+  const origCost = sheetsGiven * PAPER_BASE
+                 + Math.ceil(tapeGiven / 10) * TAPE_BASE_PER_STRIP;
+  const sheetsExtraCost = sheetsExtra * PAPER_EXTRA;
+  const tapeExtraCost   = Math.ceil(tapeExtra / 10) * TAPE_EXTRA_PER_STRIP;
+  const surcharge = sheetsExtraCost + tapeExtraCost;
+  const total = origCost + surcharge;
+
+  const unit = t('unit.credits');
+  document.getElementById('out_orig').textContent        = fmt(origCost) + ' ' + unit;
+  document.getElementById('out_sheetsExtra').textContent = fmt(sheetsExtraCost) + ' ' + unit;
+  document.getElementById('out_tapeExtra').textContent   = fmt(tapeExtraCost) + ' ' + unit;
+  document.getElementById('out_surcharge').textContent   = fmt(surcharge) + ' ' + unit;
+  document.getElementById('out_total').textContent       = fmt(total) + ' ' + unit;
+
+  const score = computeBudgetScore(total);
+  const scoreBox = document.getElementById('scoreBox');
+  document.getElementById('out_score').textContent = score;
+  scoreBox.classList.toggle('alert', score < 7);
+}
+
+function computeBudgetScore(total){
+  if (total <= 10000) return 8;
+  if (total <= 10500) return 7;
+  if (total <= 11000) return 6;
+  if (total <= 12000) return 5;
+  if (total <= 13000) return 4;
+  if (total <= 14000) return 3;
+  if (total <= 15000) return 2;
+  return 1;
+}
+
+/* =========================================================
+   6. PDF GENERATION
+   ========================================================= */
+document.getElementById('pdfBtn').addEventListener('click', () => {
+  buildReport();
+  setTimeout(() => window.print(), 150);
+});
+
+function val(id){ return document.getElementById(id).value.trim(); }
+function block(text){
+  if (!text) return `<p class="empty">${t('report.empty')}</p>`;
+  return `<div class="block">${esc(text)}</div>`;
+}
+
+function buildReport(){
+  const lang = getLang();
+  const dict = i18n[lang];
+  const unit = dict['unit.credits'];
+
+  const g = id => Math.max(0, parseFloat(document.getElementById(id).value) || 0);
+  const sheetsGiven = g('inv_sheets_given');
+  const sheetsUsed  = g('inv_sheets_used');
+  const sheetsExtra = g('inv_sheets_extra');
+  const tapeGiven   = g('inv_tape_given');
+  const tapeUsed    = g('inv_tape_used');
+  const tapeExtra   = g('inv_tape_extra');
+  const origCost = sheetsGiven * PAPER_BASE + Math.ceil(tapeGiven / 10) * TAPE_BASE_PER_STRIP;
+  const sheetsExtraCost = sheetsExtra * PAPER_EXTRA;
+  const tapeExtraCost   = Math.ceil(tapeExtra / 10) * TAPE_EXTRA_PER_STRIP;
+  const surcharge = sheetsExtraCost + tapeExtraCost;
+  const total = origCost + surcharge;
+  const score = computeBudgetScore(total);
+
+  let changesHtml = '';
+  const filled = changeRows.filter(r => r.what || r.why || r.effect);
+  if (filled.length){
+    changesHtml = `<table>
+      <tr><th>${dict['report.chWhat']}</th><th>${dict['report.chWhy']}</th><th>${dict['report.chEffect']}</th></tr>
+      ${filled.map(r => `<tr><td>${esc(r.what)||'—'}</td><td>${esc(r.why)||'—'}</td><td>${esc(r.effect)||'—'}</td></tr>`).join('')}
+    </table>`;
+  } else {
+    changesHtml = `<p class="empty">${dict['report.empty']}</p>`;
+  }
+
+  const dateStr = new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', {
+    year:'numeric', month:'long', day:'numeric'
+  });
+
+  document.getElementById('report').innerHTML = `
+    <div class="report-page" dir="${lang === 'ar' ? 'rtl' : 'ltr'}">
+      <h1>${dict['report.title']}</h1>
+      <p class="meta">${dict['report.date']}: ${dateStr}</p>
+
+      <h2>${dict['report.plan']}</h2>
+      <p class="label">${dict['report.planOrder']}</p>
+      ${block(val('plan_order'))}
+      <p class="label">${dict['report.planTools']}</p>
+      ${block(val('plan_tools'))}
+      <p class="label">${dict['report.planQC']}</p>
+      ${block(val('plan_qc'))}
+      <p class="label">${dict['report.planPlanB']}</p>
+      ${block(val('plan_planb'))}
+
+      <h2>${dict['report.changes']}</h2>
+      ${changesHtml}
+
+      <h2>${dict['report.invoice']}</h2>
+      <table>
+        <tr><td>${dict['report.invSheetsGiven']}</td><td>${fmt(sheetsGiven)}</td></tr>
+        <tr><td>${dict['report.invSheetsUsed']}</td><td>${fmt(sheetsUsed)}</td></tr>
+        <tr><td>${dict['report.invSheetsExtra']}</td><td>${fmt(sheetsExtra)} (${fmt(sheetsExtraCost)} ${unit})</td></tr>
+        <tr><td>${dict['report.invTapeGiven']}</td><td>${fmt(tapeGiven)} cm</td></tr>
+        <tr><td>${dict['report.invTapeUsed']}</td><td>${fmt(tapeUsed)} cm</td></tr>
+        <tr><td>${dict['report.invTapeExtra']}</td><td>${fmt(tapeExtra)} cm (${fmt(tapeExtraCost)} ${unit})</td></tr>
+        <tr><td><b>${dict['report.invOrig']}</b></td><td><b>${fmt(origCost)} ${unit}</b></td></tr>
+        <tr><td><b>${dict['report.invSur']}</b></td><td><b>${fmt(surcharge)} ${unit}</b></td></tr>
+        <tr><td><b>${dict['report.invTotal']}</b></td><td><b>${fmt(total)} ${unit}</b></td></tr>
+        <tr><td><b>${dict['report.invBudget']}</b></td><td><b>${score}</b></td></tr>
+      </table>
+    </div>
+  `;
+}
+
+/* =========================================================
+   7. INIT
+   ========================================================= */
+loadState();
+applyLang(getLang());
+updateInvoice();
+renderRows();
+</script>
+</body>
+</html>
